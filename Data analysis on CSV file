@@ -1,0 +1,33 @@
+# 📊 Sales Data Analysis - Basic Insights
+
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Load the CSV
+df = pd.read_csv('sales_data.csv')
+print("First 5 rows:")
+print(df.head())
+
+# Basic Data Info
+print("\nData Info:")
+print(df.info())
+print("\nDescriptive Statistics:")
+print(df.describe())
+print("\nMissing Values:")
+print(df.isnull().sum())
+
+# Group by Region
+region_sales = df.groupby('Region')['Sales'].sum()
+region_sales.plot(kind='bar', title='Total Sales by Region', color='skyblue')
+plt.ylabel('Sales')
+plt.xlabel('Region')
+plt.tight_layout()
+plt.show()
+
+# Trend over time
+df['Date'] = pd.to_datetime(df['Date'])
+daily_sales = df.groupby('Date')['Sales'].sum()
+daily_sales.plot(figsize=(10,5), title='Daily Sales Over Time')
+plt.ylabel('Sales')
+plt.show()
