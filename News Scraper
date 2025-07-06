@@ -1,0 +1,33 @@
+import requests
+from bs4 import BeautifulSoup
+from datetime import datetime
+
+def collect_headlines():
+    url = "https://www.ndtv.com/"
+    response = requests.get(url)
+    soup = BeautifulSoup(response.text, 'html.parser')
+
+    headlines = []
+
+    # Add the page <title>
+    if soup.title:
+        headlines.append("Page Title: " + soup.title.string.strip())
+
+    # Extract actual news titles
+    for headline in soup.find_all("div", class_="newsHdng"):
+        a_tag = headline.find("a")
+        if a_tag and a_tag.get_text(strip=True):
+            headlines.append(a_tag.get_text(strip=True))
+
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    filename = "automated_headlines.txt"
+
+    with open(filename, "a", encoding="utf-8") as f:
+        f.write(f"\n--- Headlines collected at {now} ---\n")
+        for i, line in enumerate(headlines, 1):
+            f.write(f"{i}. {line}\n")
+
+    print(f"[{now}] ✅ Headlines saved to '{filename}'")
+
+# Run once
+collect_headlines()
