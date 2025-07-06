@@ -1,0 +1,58 @@
+from flask import Flask, jsonify, request
+
+app = Flask(__name__)
+
+# In-memory data store (dictionary)
+users = {}  # Example format: {1: {"name": "Alice", "email": "alice@example.com"}}
+user_id_counter = 1  # Auto-incrementing user ID
+
+# 1. GET /users - Get all users
+@app.route('/users', methods=['GET'])
+def get_users():
+    return jsonify(users)
+
+# 2. GET /users/<id> - Get a specific user by ID
+@app.route('/users/<int:user_id>', methods=['GET'])
+def get_user(user_id):
+    user = users.get(user_id)
+    if user:
+        return jsonify(user)
+    return jsonify({'error': 'User not found'}), 404
+
+# 3. POST /users - Create a new user
+@app.route('/users', methods=['POST'])
+def add_user():
+    global user_id_counter
+    data = request.get_json()
+
+    if not data or 'name' not in data or 'email' not in data:
+        return jsonify({'error': 'Name and email are required'}), 400
+
+    users[user_id_counter] = {
+        'name': data['name'],
+        'email': data['email']
+    }
+    user_id_counter += 1
+    return jsonify({'message': 'User created', 'user': users[user_id_counter - 1]}), 201
+
+# 4. PUT /users/<id> - Update an existing user
+@app.route('/users/<int:user_id>', methods=['PUT'])
+def update_user(user_id):
+    data = request.get_json()
+    if user_id not in users:
+        return jsonify({'error': 'User not found'}), 404
+
+    users[user_id].update(data)
+    return jsonify({'message': 'User updated', 'user': users[user_id]})
+
+# 5. DELETE /users/<id> - Delete a user
+@app.route('/users/<int:user_id>', methods=['DELETE'])
+def delete_user(user_id):
+    if user_id in users:
+        deleted_user = users.pop(user_id)
+        return jsonify({'message': 'User deleted', 'user': deleted_user})
+    return jsonify({'error': 'User not found'}), 404
+
+# Run the Flask app
+if __name__ == '__main__':
+    app.run(debug=True)
